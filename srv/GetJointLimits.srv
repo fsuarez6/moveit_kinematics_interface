@@ -1,0 +1,9 @@
+std_msgs/Header 	header
+string[] 					name
+
+---
+# The joint(s) limits	
+string[] 					name
+float64[] 				min_position
+float64[] 				max_position
+float64[] 				max_velocity

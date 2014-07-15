@@ -1,0 +1,16 @@
+sensor_msgs/JointState  joint_states
+
+---
+# If false, something went wrong with the kinematics
+bool                    found_group
+
+# The name of the end link of the kinematic group
+string                  link_name
+
+# The pose of the link
+geometry_msgs/Pose      pose
+
+# The returned metrics
+float64                 manipulability
+float64                 manipulability_index
+float64                 max_payload

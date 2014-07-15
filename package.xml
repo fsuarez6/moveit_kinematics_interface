@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package>
+  <name>moveit_kinematics_interface</name>
+  <description>The moveit_kinematics_interface package</description>
+
+  <version>0.1.0</version>
+  <maintainer email="fsuarez6@gmail.com">Francisco Suarez-Ruiz</maintainer>
+  <license>BSD</license>
+  <url type="website">https://github.com/fsuarez6/moveit_kinematics_interface</url>
+  <url type="repository">https://github.com/fsuarez6/moveit_kinematics_interface</url>
+  <author>Francisco Suarez-Ruiz</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>joint_limits_interface</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>moveit_ros_planning</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>joint_limits_interface</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>moveit_ros_planning</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+</package>

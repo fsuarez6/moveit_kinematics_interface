@@ -1,0 +1,1 @@
+- git: {local-name: moveit_kinematics_interface, uri: 'https://github.com/fsuarez6/moveit_kinematics_interface.git', version: hydro-devel}
