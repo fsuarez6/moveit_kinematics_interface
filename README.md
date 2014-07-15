@@ -15,7 +15,8 @@ ROS packages developed by the [Group of Robots and Intelligent Machines](http://
   * For questions, please use [http://answers.ros.org](http://answers.ros.org)
 
 ### Build Status
-TODO
+
+[![Build Status](https://travis-ci.org/fsuarez6/moveit_kinematics_interface.svg?branch=hydro-devel)](https://travis-ci.org/fsuarez6/moveit_kinematics_interface)
 
 
 ## Installation
