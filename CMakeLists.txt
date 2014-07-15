@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+catkin_python_setup()
+
 add_service_files(FILES 
   GetPoseMetrics.srv
   GetStateMetrics.srv
