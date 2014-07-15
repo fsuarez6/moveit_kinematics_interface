@@ -86,18 +86,9 @@ class KinematicsServices {
       // Kinematic solver parameter
       std::string selected_solver, current_solver;
       ros::param::get(ros::this_node::getName() + "/" + planning_group_ + "/kinematics_solver", current_solver);
-      selected_solver = current_solver;
-      // TODO: Work around this hardcoded plugins
-      switch (config.kinematics_solver)
-      {
-        case 0: selected_solver = "grips_arm_kinematics/IKFastTransform6dPlugin"; break;
-        case 1: selected_solver = "lma_kinematics_plugin/LMAKinematicsPlugin"; break;
-        case 2: selected_solver = "grips_arm_kinematics/IterativeDecouplingPlugin"; break;
-        case 3: selected_solver = "kdl_kinematics_plugin/KDLKinematicsPlugin"; break;
-      }
       
       // Reset the Kinematic interface to load the selected plugin
-      ros::param::set(ros::this_node::getName() + "/" + planning_group_ + "/kinematics_solver", selected_solver);
+      ros::param::set(ros::this_node::getName() + "/" + planning_group_ + "/kinematics_solver", config.solver);
       kinematics_interface_.reset(new KinematicsInterface());
     }
     
