@@ -83,6 +83,9 @@ class KinematicsServices {
       // Max angle increment parameter (IterativeDecouplingPlugin only)
       nh_private_.setParam("max_angle_inc", config.max_increment);
       
+      // Change the maximum number of iterations for the solver
+      nh_private_.setParam("max_solver_iterations", config.max_iterations);
+      
       // Kinematic solver parameter
       std::string selected_solver, current_solver;
       ros::param::get(ros::this_node::getName() + "/" + planning_group_ + "/kinematics_solver", current_solver);
