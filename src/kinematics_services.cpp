@@ -34,6 +34,7 @@ class KinematicsServices {
     std::string               base_link_;
     bool                      first_call_dyn_;
     bool                      dyn_reconfig_enabled_;
+    bool                      metrics_enabled_;
     // Kinematics
     KinematicsInterfacePtr     kinematics_interface_;
     std::map<std::string, joint_limits_interface::JointLimits> urdf_limits_;
@@ -51,7 +52,9 @@ class KinematicsServices {
       nh_private_.param(std::string("ik_dynamic_reconfigure"), dyn_reconfig_enabled_, true);
       if (!nh_private_.hasParam("ik_dynamic_reconfigure"))
         ROS_WARN_STREAM("Parameter [~ik_dynamic_reconfigure] not found, using default: " << dyn_reconfig_enabled_);
-      // TODO: Add parameter to disable the metrics calculation because they take a while.
+      nh_private_.param(std::string("metrics_enabled"), metrics_enabled_, true);
+      if (!nh_private_.hasParam("metrics_enabled"))
+        ROS_WARN_STREAM("Parameter [~metrics_enabled] not found, using default: " << metrics_enabled_);
       
       // Kinematic interface
       kinematics_interface_.reset(new KinematicsInterface());
@@ -136,16 +139,18 @@ class KinematicsServices {
       response.found_group = true;
       
       // Calculate the metrics
-      double manipulability_index, manipulability;
-      if (kinematics_interface_->getManipulabilityIndex(manipulability_index) && 
-          kinematics_interface_->getManipulability(manipulability))
+      if (metrics_enabled_)
       {
-        response.manipulability_index = manipulability_index;
-        response.manipulability = manipulability;
+        double manipulability_index, manipulability;
+        if (kinematics_interface_->getManipulabilityIndex(manipulability_index) && 
+            kinematics_interface_->getManipulability(manipulability))
+        {
+          response.manipulability_index = manipulability_index;
+          response.manipulability = manipulability;
+        }
+        else
+          response.found_group = false;
       }
-      else
-        response.found_group = false;
-      
       return true;
     }
     
@@ -186,15 +191,18 @@ class KinematicsServices {
       response.found_group = true;
       
       // Calculate the metrics
-      double manipulability_index, manipulability;
-      if (kinematics_interface_->getManipulabilityIndex(manipulability_index) && 
-          kinematics_interface_->getManipulability(manipulability))
+      if (metrics_enabled_)
       {
-        response.manipulability_index = manipulability_index;
-        response.manipulability = manipulability;
+        double manipulability_index, manipulability;
+        if (kinematics_interface_->getManipulabilityIndex(manipulability_index) && 
+            kinematics_interface_->getManipulability(manipulability))
+        {
+          response.manipulability_index = manipulability_index;
+          response.manipulability = manipulability;
+        }
+        else
+          response.found_group = false;
       }
-      else
-        response.found_group = false;
         
       return true;
     }
