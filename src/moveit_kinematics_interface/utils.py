@@ -15,6 +15,12 @@ def harmonize(q_in):
       q_out[idx] += 2*math.pi;
   return q_out
 
+def kdl_to_numpy_array(data):
+  array = np.zeros(data.rows())
+  for i in range(data.rows()):
+    array[i] = data[i]
+  return array
+
 def kdl_to_mat(data):
   mat =  np.mat(np.zeros((data.rows(), data.columns())))
   for i in range(data.rows()):
@@ -24,6 +30,17 @@ def kdl_to_mat(data):
 
 def nearly_equal(a,b,sig_fig=5):
   return (a==b or int(a*10**sig_fig) == int(b*10**sig_fig))
+
+def build_kdl_array(q):
+  if q == None:
+    return None
+  if (type(q) == np.ndarray or type(q) == list):
+    q_kdl = PyKDL.JntArray(len(q))
+    for i, q_i in enumerate(q):
+      q_kdl[i] = q_i
+    return q_kdl
+  elif type(q) == PyKDL.JntArray:
+    return q
 
 def obeys_limits(q, q_min, q_max):
   obeys_limits = True

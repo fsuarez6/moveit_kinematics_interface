@@ -17,8 +17,8 @@ class Kinematics(object):
   """
   def __init__(self, tip_link, base_link=None, ik_solver='NR'):
     # TODO: Read values from parameter server
-    self._iterations = 500
-    self._epsilon = 1e-5
+    self._iterations = 100
+    self._epsilon = 1e-3
     # TODO: Validate that the URDF exists
     self._urdf = URDF.from_parameter_server(key='robot_description')
     self._kdl_tree = kdl_tree_from_urdf_model(self._urdf)
@@ -30,6 +30,7 @@ class Kinematics(object):
     self._tip_link = tip_link
     self._chain = self._kdl_tree.getChain(self._base_link, self._tip_link)
     self._ik_solver = ik_solver
+    self._ik_solutions = []
 
     # Get the joint names
     self._num_joints = self._chain.getNrOfJoints()
@@ -74,18 +75,37 @@ class Kinematics(object):
     rospy.loginfo('Nr Joints:   %s' % self._num_joints)
     rospy.loginfo('IK Solver:   %s' % IK_SOLVERS[ik_solver])
 
-  def _valid_positions_size(joint_positions):
+  def _joints_in_limits(self, q):
+    lower_lim = self._q_min
+    upper_lim = self._q_max
+    return np.all([q >= lower_lim, q <= upper_lim], 0)
+    
+  def _random_joint_positions(self):
+    zip_lims = zip(self._q_min, self._q_max)
+    return build_kdl_array([np.random.uniform(min_lim, max_lim) for min_lim, max_lim in zip_lims])
+    
+  def _valid_positions_size(self, q):
     valid = True
-    if len(joint_positions) != self._num_joints:
-      rospy.logwarn('Unexpected number of values. Received: %d, Expected: %d' % (len(joint_positions), self._num_joints))
+    if type(q) == PyKDL.JntArray:
+      q_len = q.rows() 
+    else:
+      q_len = len(q)
+    if q_len != self._num_joints:
+      rospy.logwarn('Unexpected number of values. Received: %d, Expected: %d' % (q_len, self._num_joints))
       valid = False
     return valid
 
-  def get_end_effector_transform(self):
+  def get_end_effector_transform(self, joint_positions=None):
     end_frame = PyKDL.Frame()
-    self._fk_p_kdl.JntToCart(self._jnt_positions, end_frame)
+    if joint_positions:
+      self._fk_p_kdl.JntToCart(build_kdl_array(joint_positions), end_frame)
+    else:
+      self._fk_p_kdl.JntToCart(self._jnt_positions, end_frame)
     return end_frame
 
+  def get_joint_names(self):
+    return self._joint_names
+    
   def get_joint_positions(self):
     return self._jnt_positions
 
@@ -100,26 +120,42 @@ class Kinematics(object):
     rospy.loginfo('KDL joints: %d' % self._kdl_tree.getNrOfJoints())
     rospy.loginfo('KDL segments: %d' % self._kdl_tree.getNrOfSegments())
 
+  def search_ik(self, goal_pose, initial_seed, timeout=0.01):
+    st_time = rospy.get_time()
+    self._ik_solutions = []
+    found = 0
+    change_seed = False
+    while (rospy.get_time() - st_time < timeout) and not rospy.is_shutdown():
+      if change_seed:
+        seed = self._random_joint_positions()
+      else:
+        seed = initial_seed
+        change_seed = True
+      ik_found = self.set_from_ik(goal_pose, seed)
+      if ik_found >= 0:
+        self._ik_solutions.append(self.get_joint_positions())
+        found += 1
+    return found
+
   def set_from_ik(self, goal_pose, seed=None):
     # Populate seed with current angles if not provided
-    if seed != None and _valid_positions_size(seed):
-      seed_array = PyKDL.JntArray(seed)
+    if seed != None and self._valid_positions_size(seed):
+      seed_array = build_kdl_array(seed)
     else:
-      seed_array = self._jnt_positions
+      seed_array = self._random_joint_positions()
     # Make IK Call
-    # TODO: Include the search IK routine
     result_angles = PyKDL.JntArray(self._num_joints)
     ik_found = self._ik_p_kdl.CartToJnt(seed_array, goal_pose, result_angles)
     if ik_found >= 0:
       if self._ik_solver == 'LMA':
         result_angles = harmonize(result_angles)
         self._jnt_positions = result_angles
-      if obeys_limits(result_angles, self._q_min, self._q_max):
+      if self._joints_in_limits(result_angles):
         self._jnt_positions = result_angles
       else:
         ik_found = -4
     return ik_found
 
   def set_joint_positions(self, joint_positions):
-    if _valid_positions_size(joint_positions):
-      self._jnt_positions = PyKDL.JntArray(joint_positions)
+    if self._valid_positions_size(joint_positions):
+      self._jnt_positions = build_kdl_array(joint_positions)
